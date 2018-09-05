@@ -2,7 +2,7 @@
 #   1. wav file (in apostrophes)
 #   2. hydrophone sensitivity in dB
 #   3. start time in seconds
-#   4. stop time (if you want it to be the end of the wav file, write [])
+#   4. stop time (optional - unless specified, analysis will go to the end of the file)
 
 # Other things to note:
 #   - The fft window size is set to 65536 samples
@@ -18,11 +18,15 @@ disp(' ');
 
 file = varargin{1};
 sens = varargin{2};
+if length(varargin)>2
 start = varargin{3};
+end
 if length(varargin)==4
 stop = varargin{4}
 end
-
+if length(varargin)>4
+error('Too many inputs.')
+end 
 
 # Send error if first input is not a string
 if typeinfo(file) != 'sq_string'
@@ -41,23 +45,19 @@ error(["Recording is shorter than the chosen start time.\n       Recording lengt
 end
 
 # Take desired portion of the file
-if length(varargin)==3
-y = y(max(floor(fs*start+1),1):end);
-stop = length(y)/fs;
-elseif length(varargin)==4
-stop = varargin{4}
+
+if length(varargin) == 3
+    y = y(max(floor(fs*start+1),1):end);
+    stop = length(y)/fs;
+elseif length(varargin) == 4
+    stop = varargin{4}
     if start < stop
-    nstart = max(floor(fs*start+1),1);
-    nstop = min(ceil(fs*stop),length(y));
-    y = y(nstart:nstop);
+        nstart = max(floor(fs*start+1),1);
+        nstop = min(ceil(fs*stop),length(y));
+        y = y(nstart:nstop);
     else
     error('Stop time must be greater than start time.')
     end
-end
-
-# Send error if start time >= stop time
-if start >= stop
-error('Stop time must be greater than the start time.')
 end
 
 
