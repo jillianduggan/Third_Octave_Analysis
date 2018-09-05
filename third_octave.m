@@ -1,4 +1,4 @@
-# inputs:
+# Inputs:
 #   1. wav file (in apostrophes)
 #   2. hydrophone sensitivity in dB
 #   3. start time in seconds
@@ -105,7 +105,7 @@ F = (1:w/2)*fs/w;
 
 # Standard third octave values
 # (goes up to 250 kHz)
-# the i^th band is (T(i-1), T(i))
+
 T = [0;
      16;
      20;
@@ -175,7 +175,7 @@ T = T(1:m);
       
 
       
-# sum spectrum values over 1/3 octave bins
+# Sum spectrum values over 1/3 octave bins
       Z = zeros(m,1);
       for i = 1:m
       J = (flower(i)<= F) & (F < fupper(i));
@@ -195,12 +195,12 @@ T = T(1:m);
 
 
 # Prepare for writing to text file
-      T = T(1:m);
-      TOA = [T Z];
-      a = index(file,'.wav');
+T = T(1:m);
+TOA = [T Z];
+a = index(file,'.wav');
       
 # To suppress file info, add '-ascii' as the first argument
-      save(['third_octave_' sprintf(strtrunc(file,a-1))],'TOA')
+save(['third_octave_' sprintf(strtrunc(file,a-1))],'TOA')
 
 disp(' ');
 disp(['A 1/3 octave analysis of ' sprintf(file) ' was performed and saved in the text file third_octave_' sprintf(strtrunc(file,a-1)) '.'])
