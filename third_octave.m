@@ -1,4 +1,4 @@
-# Inputs:
+# inputs:
 #   1. wav file (in apostrophes)
 #   2. hydrophone sensitivity in dB
 #   3. start time in seconds
@@ -12,9 +12,17 @@
 
 
 
-function third_oct(file,sens,start,stop)
+function third_octave(varargin)
 
 disp(' ');
+
+file = varargin{1};
+sens = varargin{2};
+start = varargin{3};
+if length(varargin)==4
+stop = varargin{4}
+end
+
 
 # Send error if first input is not a string
 if typeinfo(file) != 'sq_string'
@@ -32,21 +40,25 @@ if start >= n/fs
 error(["Recording is shorter than the chosen start time.\n       Recording length is " t " seconds."])
 end
 
-# Calculate stop time if stop is []
-if stop == 'end'
-stop = n/fs;
+# Take desired portion of the file
+if length(varargin)==3
+y = y(max(floor(fs*start+1),1):end);
+stop = length(y)/fs;
+elseif length(varargin)==4
+stop = varargin{4}
+    if start < stop
+    nstart = max(floor(fs*start+1),1);
+    nstop = min(ceil(fs*stop),length(y));
+    y = y(nstart:nstop);
+    else
+    error('Stop time must be greater than start time.')
+    end
 end
-
 
 # Send error if start time >= stop time
- if start >= stop
+if start >= stop
 error('Stop time must be greater than the start time.')
 end
-
-
-# Take the portion of wav file between the start and stop times
-y = y(start*fs+1:stop*fs);
-
 
 
 # new length
@@ -105,8 +117,8 @@ F = (1:w/2)*fs/w;
 
 # Standard third octave values
 # (goes up to 250 kHz)
-
-T = [0;
+# the i^th band is (T(i-1), T(i))
+To = [0;
      16;
      20;
      25;
@@ -149,7 +161,9 @@ T = [0;
      125000;
      160000;
      200000;
-     250000];
+      250000;
+      315000;
+      400000];
 
 
 
@@ -171,11 +185,11 @@ flower(1) = 1;
 J = fcentre < F(N);
 fcentre = fcentre(J);
 m = length(fcentre);
-T = T(1:m);
+T = To(1:m);
       
 
       
-# Sum spectrum values over 1/3 octave bins
+# sum spectrum values over 1/3 octave bins
       Z = zeros(m,1);
       for i = 1:m
       J = (flower(i)<= F) & (F < fupper(i));
@@ -195,18 +209,30 @@ T = T(1:m);
 
 
 # Prepare for writing to text file
-T = T(1:m);
-TOA = [T Z];
-a = index(file,'.wav');
+      T = T(1:m);
+      TOA = [T Z];
+      a = index(file,'.wav');
       
 # To suppress file info, add '-ascii' as the first argument
-save(['third_octave_' sprintf(strtrunc(file,a-1))],'TOA')
+      save(['third_octave_' sprintf(strtrunc(file,a-1))],'TOA')
 
 disp(' ');
 disp(['A 1/3 octave analysis of ' sprintf(file) ' was performed and saved in the text file third_octave_' sprintf(strtrunc(file,a-1)) '.'])
 disp(' ');
       
-# figure
-# scatter(1:length(Z),Z)
+figure
+scatter(1:length(Z),Z,'filled')
+jump = floor(m/8);
+if jump == 0
+jump = 1
+end
+I = 0:jump:length(Z)+1;
+I1 = 1:jump:length(Z)+jump;
+set(gca,'xtick',I)
+set(gca,'xticklabel',To(I1))
+xlabel('1/3 Octave bin centre frequency (Hz)')
+ylabel('dB')
+title(['1/3 Octave analysis - ' sprintf(file) ])
+grid on
 
 
