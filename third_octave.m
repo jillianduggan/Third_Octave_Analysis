@@ -1,7 +1,7 @@
 # inputs:
 #   1. wav file (in apostrophes)
 #   2. hydrophone sensitivity in dB
-#   3. start time in seconds
+#   3. start time in seconds (optional - unless specified, analysis will start at beginning of the file)
 #   4. stop time (optional - unless specified, analysis will go to the end of the file)
 
 # Other things to note:
@@ -13,8 +13,6 @@
 
 
 function third_octave(varargin)
-
-disp(' ');
 
 file = varargin{1};
 # Send error if first input is not a string
