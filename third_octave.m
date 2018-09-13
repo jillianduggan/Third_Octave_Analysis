@@ -23,17 +23,22 @@ if typeinfo(file) != 'sq_string'
 error('Wav file must be entered as a string. Enclose file name in apostrophes or quotes.')
 end
 
-# Read in sensitivity
-sens = varargin{2};
+# Read in sensitivity from wav file
+inf0 = audioinfo(file);
+inf = strsplit(inf0.("Comment"),",");
+sens = inf(1,2);
+sens = sens{1};
+sens = strtok(sens," dBV");
+sens = str2double(sens);
 
 # Assume start time is 0, unless told otherwise
 start = 0;
-if length(varargin)>2
-start = varargin{3};
+if length(varargin)>1
+start = varargin{2};
 end
 
 # Send error if too many inputs
-if length(varargin)>4
+if length(varargin)>3
 error('Too many inputs.')
 end
 
@@ -47,22 +52,22 @@ nstart = max(floor(fs*start+1),1);
 
 # Send error if wav file is shorter than start time
 if nstart >= n
-error(["Recording is shorter than the chosen start time.\n       Recording length is " t " seconds."])
+error(["Recording is shorter than the chosen start time.\n       Recording length is " t " seconds.\n\n"])
 end
 
 # Take desired portion of the file
-if length(varargin) == 2
+if length(varargin) == 1
     stop = n/fs;
-elseif length(varargin) == 3
+elseif length(varargin) == 2
     y = y(nstart:end);
     stop = length(y)/fs;
-elseif length(varargin) == 4
-    stop = varargin{4};
+elseif length(varargin) == 3
+    stop = varargin{3};
     if start < stop
         nstop = min(ceil(fs*stop),length(y));
         y = y(nstart:nstop);
     else
-        error('Stop time must be greater than start time.')
+        error("Stop time must be greater than start time.\n\n")
     end
 end
 
@@ -224,13 +229,14 @@ a = index(file,'.wav');
 b = [];
 save('-ascii',['third_octave_' sprintf(strtrunc(file,a-1))],'b')
 newfile = fopen(['third_octave_' sprintf(strtrunc(file,a-1))],'w');
-fprintf(newfile, '%s',"\n 1/3 octave bin (Hz)   dB re 1 uPa \n \n")
+fprintf(newfile, '%s',["\n Filename: " file "\n Sample rate: " num2str(fs) " Hz \n Sensitivity: " num2str(sens) " dBV re 1 uPa \n \n     1/3 octave analysis" "\n ------------------------------" "\n \n bin (Hz)         dB re 1 uPa \n \n"])
 fclose(newfile);
 save('-ascii','-append', ['third_octave_' sprintf(strtrunc(file,a-1))],'TOA')
 
 
 disp(' ');
 disp(['1/3 octave analysis completed. Data saved in third_octave_' sprintf(strtrunc(file,a-1)) '.txt.'])
+disp(' ');
 disp(' ');
 
 figure
@@ -245,7 +251,7 @@ set(gca,'xtick',I)
 set(gca,'xticklabel',To(I1))
 xlabel("\n 1/3 octave bin (centre frequency in Hz)\n", 'fontweight','bold','fontsize', 12)
 ylabel("dB re 1 uPa", 'fontweight','bold','fontsize', 12)
-title(["\n" '1/3 octave analysis - ' sprintf(file) "\n" '(' sprintf(num2str(start)) ' to ' sprintf(num2str(stop)) 's )'], 'fontsize', 16)
+title(["\n" '1/3 octave analysis - ' sprintf(file) "\n" '(' sprintf(num2str(start)) ' to ' sprintf(num2str(stop)) ' s )'], 'fontsize', 16)
 grid on
 box on
 
