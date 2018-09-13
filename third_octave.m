@@ -25,11 +25,15 @@ end
 
 # Read in sensitivity from wav file
 inf0 = audioinfo(file);
-inf = strsplit(inf0.("Comment"),",");
-sens = inf(1,2);
-sens = sens{1};
-sens = strtok(sens," dBV");
-sens = str2double(sens);
+if isfield(inf0,"Comment")==false
+    sens = 0;
+else
+    inf = strsplit(inf0.("Comment"),",");
+    sens = inf(1,2);
+    sens = sens{1};
+    sens = strtok(sens," dBV");
+    sens = str2double(sens);
+end
 
 # Assume start time is 0, unless told otherwise
 start = 0;
